@@ -1,0 +1,155 @@
+/* ════════════════════════════════════════════════════
+   KULDEEP CHATURVEDI — script.js
+════════════════════════════════════════════════════ */
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  // ─── YEAR ─────────────────────────────────────────
+  const yr = document.getElementById('yr');
+  if (yr) yr.textContent = new Date().getFullYear();
+
+  // ─── CUSTOM CURSOR ────────────────────────────────
+  const cursor = document.getElementById('cursor');
+  const follower = document.getElementById('cursor-follower');
+  let mx = 0, my = 0, fx = 0, fy = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    if (cursor) {
+      cursor.style.left = mx + 'px';
+      cursor.style.top  = my + 'px';
+    }
+  });
+
+  function animFollower() {
+    fx += (mx - fx) * 0.12;
+    fy += (my - fy) * 0.12;
+    if (follower) {
+      follower.style.left = fx + 'px';
+      follower.style.top  = fy + 'px';
+    }
+    requestAnimationFrame(animFollower);
+  }
+  animFollower();
+
+  // ─── NAVBAR ───────────────────────────────────────
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 30);
+  }, { passive: true });
+
+  // ─── BURGER / MOBILE MENU ─────────────────────────
+  const burger = document.getElementById('burger');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  burger.addEventListener('click', () => {
+    const open = mobileMenu.classList.toggle('open');
+    burger.classList.toggle('open', open);
+  });
+
+  mobileMenu.querySelectorAll('.mm-link').forEach(link => {
+    link.addEventListener('click', () => {
+      mobileMenu.classList.remove('open');
+      burger.classList.remove('open');
+    });
+  });
+
+  // ─── SCROLL REVEAL ────────────────────────────────
+  const revealEls = document.querySelectorAll('.reveal');
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -48px 0px' });
+
+  revealEls.forEach(el => revealObserver.observe(el));
+
+  // ─── CONTACT FORM ─────────────────────────────────
+  const form = document.getElementById('connect-form');
+  const formOk = document.getElementById('form-ok');
+
+  if (form) {
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const name    = form.name.value.trim();
+      const email   = form.email.value.trim();
+      const message = form.message.value.trim();
+
+      // Highlight empty required fields
+      [
+        { el: form.name,    val: name },
+        { el: form.email,   val: email },
+        { el: form.message, val: message },
+      ].forEach(({ el, val }) => {
+        if (!val) {
+          el.style.borderColor = 'rgba(180,30,30,0.5)';
+          setTimeout(() => el.style.borderColor = '', 2000);
+        }
+      });
+
+      if (!name || !email || !message) return;
+
+      // Simulate send — replace with Formspree/EmailJS/Netlify
+      const btn = form.querySelector('.btn-submit');
+      btn.textContent = 'Sending…';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        form.reset();
+        btn.textContent = 'Send Message';
+        btn.disabled = false;
+        formOk.classList.add('show');
+        setTimeout(() => formOk.classList.remove('show'), 5000);
+      }, 1200);
+    });
+  }
+
+  // ─── VENTURE CARD HOVER TILT ──────────────────────
+  document.querySelectorAll('.venture-card, .story-card, .voice-card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width  - 0.5;
+      const y = (e.clientY - r.top)  / r.height - 0.5;
+      card.style.transform = `translateY(-5px) rotateX(${-y * 2.5}deg) rotateY(${x * 2.5}deg)`;
+      card.style.transition = 'transform 0.1s';
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = '';
+      card.style.transition = '';
+    });
+  });
+
+  // ─── MARQUEE PAUSE ON HOVER ────────────────────────
+  const track = document.querySelector('.marquee-track');
+  if (track) {
+    track.parentElement.addEventListener('mouseenter', () => {
+      track.style.animationPlayState = 'paused';
+    });
+    track.parentElement.addEventListener('mouseleave', () => {
+      track.style.animationPlayState = 'running';
+    });
+  }
+
+  // ─── ACTIVE NAV HIGHLIGHT ─────────────────────────
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a');
+
+  const sectionObs = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navLinks.forEach(a => {
+          const active = a.getAttribute('href') === `#${id}`;
+          a.style.color  = active ? 'var(--green)' : '';
+          a.style.fontWeight = active ? '500' : '';
+        });
+      }
+    });
+  }, { threshold: 0.45 });
+
+  sections.forEach(s => sectionObs.observe(s));
+
+});
